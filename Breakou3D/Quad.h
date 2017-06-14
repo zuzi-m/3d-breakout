@@ -3,6 +3,7 @@
 #include "Point.h"
 #include "Matrix.h"
 #include "Ball.h"
+#include "Texture.h"
 
 using namespace MathLib;
 
@@ -13,15 +14,16 @@ public:
 	Quad(const Quad&);
 	~Quad();
 
-	void draw();
+	void draw() const;
 
 	void trans(Matrix&);
 	void translate(Vector&);
 
-	double getDistance(const Ball*) const;
-
 	Vector getNormal() const;
 	const Point& operator[](const int) const;
+
+	Color color;
+	Texture* texture = NULL;
 private:
 	Point points[4];
 	Vector normal;

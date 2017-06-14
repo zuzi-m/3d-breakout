@@ -6,6 +6,7 @@
 
 Color::Color()
 {
+	// initialize the components to black solid color
 	r = 0.0;
 	g = 0.0;
 	b = 0.0;
@@ -14,6 +15,7 @@ Color::Color()
 
 Color::Color(double grayscale)
 {
+	// set all components to the grayscale, alpha to 1.0
 	r = grayscale;
 	g = grayscale;
 	b = grayscale;
@@ -22,28 +24,34 @@ Color::Color(double grayscale)
 
 Color::Color(double red, double green, double blue)
 {
+	// set all components accordingly
 	r = red;
 	g = green;
 	b = blue;
 	a = 1.0;
+	// clamp the components to be valid
 	clamp();
 }
 
 Color::Color(double red, double green, double blue, double alpha)
 {
+	// set all components accordingly
 	r = red;
 	g = green;
 	b = blue;
 	a = alpha;
+	// clamp the components to be valid
 	clamp();
 }
 
 Color::Color(MathLib::Vector &v)
 {
+	// create the color from vector components
 	r = v[0];
 	g = v[1];
 	b = v[2];
 	a = 1.0;
+	// clamp the components to be valid
 	clamp();
 }
 
@@ -54,11 +62,13 @@ Color::~Color()
 
 Color Color::randomColor(double alpha)
 {
+	// just create a color with components randomly in range 0.0 to 1.0
 	return Color((rand() % 101) / 100.0, (rand() % 101) / 100.0, (rand() % 101) / 100.0, alpha);
 }
 
 Color Color::hsv(int h, double s, double v, double alpha)
 {
+	// make sure the hue is valid
 	h = h % 360;
 	double hh = h / 60.0;
 	int x = static_cast<int>(floor(hh));
@@ -89,10 +99,12 @@ Color Color::hsv(int h, double s, double v, double alpha)
 	return Color(r, g, b, alpha);
 }
 
-void Color::bind()
+void Color::bind() const
 {
+	// set the color
 	glColor4d(r, g, b, a);
 	float vals[3]{ static_cast<float>(r), static_cast<float>(g), static_cast<float>(b) };
+	// set the material's ambient and diffuse colors if using materials
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, vals);
 }
 

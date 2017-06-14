@@ -22,18 +22,7 @@ void Ball::draw()
 
 	glutSolidSphere(radius, 36, 36);
 
-	MathLib::Point end(velocity.multiply(100.0));
-	glBegin(GL_LINES);
-	glVertex3d(0, 0, 0);
-	glVertex3d(end[0], end[1], end[2]);
-	glEnd();
-
 	glPopMatrix();
-}
-
-void Ball::move(long milis)
-{
-	position = position.add(velocity.multiply(milis / 1000.0));
 }
 
 MathLib::Point Ball::getPosition() const
@@ -54,4 +43,9 @@ MathLib::Vector Ball::getVelocity() const
 void Ball::setVelocity(MathLib::Vector &v)
 {
 	this->velocity = v;
+}
+
+double Ball::getRadius() const
+{
+	return radius;
 }

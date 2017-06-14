@@ -1,9 +1,12 @@
 #include "BrickRing.h"
 
+#include "CollisionDetector.h"
+
 BrickRing::BrickRing(int count, int levels, double radius, double thickness, double height, int hue)
 {
 	// set the attributes of the brick ring
 	this->radius = radius;
+	activeBricks = count * levels;
 	brick_count = count;
 	brick_levels = levels;
 	brick_width = thickness;
@@ -20,7 +23,7 @@ BrickRing::BrickRing(int count, int levels, double radius, double thickness, dou
 		for (int i = 0; i < brick_count; i++) {
 			// create each brick and position it to proper place
 			Brick* b = Brick::unit(brick_count, radius, thickness, height);
-			b->color = Color::hsv(hue, 0.5 - ((i + level % 2) % 2)*0.25, 0.5, 1.0);
+			b->setColor(Color::hsv(hue, 0.5 - ((i + level % 2) % 2)*0.25, 0.5, 1.0)); // TODO simplify
 			b->trans(Matrix::rotation(1, i * 2.0 * PI / brick_count));
 			b->translate(height_translation);
 			bricks[level][i] = b;
@@ -57,17 +60,26 @@ void BrickRing::draw() const
 
 void BrickRing::removeRandom()
 {
-	int rl = rand() % brick_levels;
-	int rb = rand() % brick_count;
-	if (bricks[rl][rb] != NULL) {
-		delete(bricks[rl][rb]);
-		bricks[rl][rb] = NULL;
+	// dont remove brick if there are no bricks
+	if (activeBricks > 0) {
+		// if it makes sense, guess random position and try to remove brick there
+		int rl = rand() % brick_levels;
+		int rb = rand() % brick_count;
+		if (!removeBrick(rl, rb)) {
+			// if not successful, try again until it succeeds (it should eventually
+			// because there is at least one brick active
+			return removeRandom();
+		}
 	}
 }
 
-void BrickRing::tick(long milis, Ball* ball)
+double BrickRing::tick(double dt, Ball* ball)
 {
-	double dt = milis / 1000.0;
+	if (activeBricks < 1) {
+		// nothing to do if no bricks are active any more
+		return 0.0;
+	}
+
 	// go over brick levels from the top to bottom
 	// skip the lowest layer - there is nowhere to fall from there
 	for (int level = brick_levels - 1; level > 0; level--) {
@@ -92,12 +104,47 @@ void BrickRing::tick(long milis, Ball* ball)
 			if (current != NULL) {
 				if (current->getBottom() > level_height) {
 					// add G to brick's velocity v = g * t
-					current->velocity = current->velocity.add(Vector(0.0, -1.0, 0.0).multiply(dt*1.0));
+					current->velocity = current->velocity.add(Vector(0.0, -1.0, 0.0).multiply(dt*10.0));
 				} else {
 					current->velocity = Vector(0.0);
 				}
 				current->translate(current->velocity.multiply(dt));
 			}
 		}
+	}
+
+	Point ballPos = ball->getPosition();
+	double ballRadius = sqrt(ballPos[0] * ballPos[0] + ballPos[2] * ballPos[2]);
+	if (abs(ballRadius - radius) < brick_width * 3) {
+		for (int brickIdx = 0; brickIdx < brick_count; brickIdx++) {
+			//int brickIdx = (ballSection + i) % brick_count;
+			Brick* b = bricks[0][brickIdx];
+			if (b == NULL) continue;
+
+			double remainingTime = CollisionDetector::getCollision(ball, b, dt);
+			if (remainingTime != 0.0) {
+				removeBrick(0, brickIdx);
+				return remainingTime;
+			}
+		}
+	}
+	return 0.0;
+}
+
+int BrickRing::bricksLeft() const
+{
+	return activeBricks;
+}
+
+bool BrickRing::removeBrick(int level, int position)
+{
+	if (bricks[level][position] != NULL) {
+		delete(bricks[level][position]);
+		bricks[level][position] = NULL;
+		activeBricks--;
+		return true;
+	}
+	else {
+		return false;
 	}
 }

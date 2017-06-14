@@ -10,9 +10,16 @@ public:
 	~BrickRing();
 
 	void draw() const;
+
 	void removeRandom();
-	void tick(long milis, Ball* ball);
+
+	double tick(double dt, Ball* ball);
+
+	int bricksLeft() const;
 private:
+	bool removeBrick(int level, int position);
+
+	int activeBricks;
 	int brick_count;
 	int brick_levels;
 	double radius;

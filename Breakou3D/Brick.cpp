@@ -2,9 +2,19 @@
 
 #include <algorithm>
 
+int Brick::numQuads() const
+{
+	return quads.size();
+}
+
+const Quad & Brick::operator[](const int idx) const
+{
+	return quads[idx % quads.size()];
+}
+
 Brick::Brick()
 {
-	color = Color::randomColor(1.0);
+	setColor(Color(1.0));
 }
 
 
@@ -45,7 +55,6 @@ Brick* Brick::unit(int num_segments, double radius, double thickness, double hei
 
 void Brick::draw()
 {
-	color.bind();
 	for (size_t i = 0; i < quads.size(); i++) {
 		quads[i].draw();
 	}
@@ -62,6 +71,20 @@ void Brick::translate(Vector &v)
 {
 	for (size_t i = 0; i < quads.size(); i++) {
 		quads[i].translate(v);
+	}
+}
+
+void Brick::setColor(Color &c)
+{
+	for (size_t i = 0; i < quads.size(); i++) {
+		quads[i].color = c;
+	}
+}
+
+void Brick::setTexture(Texture *tex)
+{
+	for (size_t i = 0; i < quads.size(); i++) {
+		quads[i].texture = tex;
 	}
 }
 
@@ -85,24 +108,4 @@ double Brick::getBottom()
 		}
 	}
 	return bot;
-}
-
-double Brick::getDistance(const Ball *b) const
-{
-	double dist = -1.0;
-	for (size_t i = 0; i < quads.size(); i++) {
-		double d = quads[i].getDistance(b);
-		if (d == -1.0) {
-			continue;
-		}
-		if (dist == -1) {
-			dist = d;
-		} else {
-			dist = std::min(dist, d);
-		}
-		if (dist == 0.0) {
-			return 0.0;
-		}
-	}
-	return dist;
 }
