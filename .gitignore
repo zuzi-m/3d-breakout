@@ -1,6 +1,8 @@
-*.db
-Breakou3D/Debug
-Breakou3D/Release
-*.opendb
+Breakou3D/Debug/
+Breakou3D/Release/
 Debug/
+Release/
+*.opendb
+*.db
+
 .vs/
